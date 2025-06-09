@@ -311,7 +311,7 @@ class ColmapDataParser(DataParser):
             R = extrinsics.qvec2rotmat()
             T = np.array(extrinsics.tvec)
 
-            if intrinsics.model == "SIMPLE_PINHOLE":
+            if intrinsics.model in ("SIMPLE_PINHOLE", "SPHERE"):
                 focal_length_x = intrinsics.params[0]
                 focal_length_y = focal_length_x
                 cx = intrinsics.params[1]

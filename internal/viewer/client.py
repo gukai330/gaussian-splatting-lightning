@@ -49,12 +49,16 @@ class ClientThread(threading.Thread):
             time_value: float = 0.,
             camera_transform=None,
     ):
+        
+        fov = camera.fov
+        aspect = camera.aspect
         # calculate image width and height
         image_height = image_size
         image_width = int(image_height * camera.aspect)
         if image_width > image_size:
             image_width = image_size
             image_height = int(image_width / camera.aspect)
+
 
         # get camera pose
         R = vtf.SO3(wxyz=camera.wxyz)
@@ -77,7 +81,8 @@ class ClientThread(threading.Thread):
         T = w2c[:3, 3]
 
         # construct camera
-        fx = torch.tensor([fov2focal(camera.fov, max(image_width, image_height))], dtype=torch.float)
+        fx = torch.tensor([fov2focal(camera.fov, image_height)], dtype=torch.float)
+
         camera = Cameras(
             R=R.unsqueeze(0),
             T=T.unsqueeze(0),

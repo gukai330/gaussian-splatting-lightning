@@ -126,6 +126,7 @@ class ViewerRenderer:
         self._set_output_type(name=first_type_name, renderer_output_info=available_outputs[first_type_name])
 
     def get_outputs(self, camera, scaling_modifier: float = 1.):
+        
         render_type, output_info, output_processor = self.output_info
 
         render_outputs = self.renderer(

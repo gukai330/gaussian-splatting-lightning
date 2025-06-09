@@ -17,7 +17,7 @@ parser.add_argument("--output", type=str, default=None)
 parser.add_argument("--sam_ckpt", "-c", type=str, default="sam_vit_h_4b8939.pth")
 parser.add_argument("--sam_arch", type=str, default="vit_h")
 parser.add_argument("--preview", action="store_true", default=False)
-parser.add_argument("--ext", "-e", nargs="+", default=["jpg", "jpeg", "JPG", "JPEG"])
+parser.add_argument("--ext", "-e", nargs="+", default=["jpg", "jpeg", "JPG", "JPEG", "png", "PNG"])
 configure_arg_parser(parser)
 args = parser.parse_args()
 

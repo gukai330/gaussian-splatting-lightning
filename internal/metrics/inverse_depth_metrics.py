@@ -16,6 +16,9 @@ class WeightScheduler:
 
 @dataclass
 class HasInverseDepthMetrics(VanillaMetrics):
+
+    depth_reg_from: int = -1
+
     depth_loss_type: Literal["l1", "l1+ssim", "l2", "kl"] = "l1"
 
     depth_loss_ssim_weight: float = 0.2
@@ -109,14 +112,16 @@ class HasInverseDepthMetricsModule(VanillaMetricsImpl):
     def get_train_metrics(self, pl_module, gaussian_model, step: int, batch, outputs) -> Tuple[Dict[str, Any], Dict[str, bool]]:
         metrics, pbar = super().get_train_metrics(pl_module, gaussian_model, step, batch, outputs)
 
-        d_reg_weight = self.get_weight(step)
-        d_reg = self.get_inverse_depth_metric(batch, outputs) * d_reg_weight
+        if step >= self.config.depth_reg_from:
 
-        metrics["loss"] = metrics["loss"] + d_reg
-        metrics["d_reg"] = d_reg
-        metrics["d_w"] = d_reg_weight
-        pbar["d_reg"] = True
-        pbar["d_w"] = True
+            d_reg_weight = self.get_weight(step - self.config.depth_reg_from)
+            d_reg = self.get_inverse_depth_metric(batch, outputs) * d_reg_weight
+
+            metrics["loss"] = metrics["loss"] + d_reg
+            metrics["d_reg"] = d_reg
+            metrics["d_w"] = d_reg_weight
+            pbar["d_reg"] = True
+            pbar["d_w"] = True
 
         return metrics, pbar
 

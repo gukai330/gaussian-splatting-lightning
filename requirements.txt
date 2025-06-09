@@ -1,1 +1,8 @@
 -r requirements/lightning23.txt
+hdbscan
+scikit-learn==1.3.2
+fvcore
+iopath
+./submodules/pytorch3d-0.7.4-cp39-cp39-linux_x86_64.whl
+-e ./submodules/gsplat
+-e ./submodules/segment-anything

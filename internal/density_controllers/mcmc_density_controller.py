@@ -19,7 +19,7 @@ from .density_controller import DensityController, DensityControllerImpl, Utils
 
 @dataclass
 class MCMCDensityController(DensityController):
-    cap_max: int
+    cap_max: int = 5_000_000
     """
     the maximum number of Gaussians
     """
@@ -32,7 +32,7 @@ class MCMCDensityController(DensityController):
 
     densification_interval: int = 100
 
-    min_opacity: float = 0.005
+    min_opacity: float = 0.05
 
     N_max: int = 51
     """

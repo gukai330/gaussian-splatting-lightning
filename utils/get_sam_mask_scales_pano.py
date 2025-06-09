@@ -12,7 +12,7 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from internal.utils.gaussian_model_loader import GaussianModelLoader
 from internal.dataparsers.colmap_dataparser import ColmapDataParser
 # from internal.renderers.vanilla_depth_renderer import VanillaDepthRenderer
-from internal.renderers.gsplat_contrastive_feature_renderer import GSplatContrastiveFeatureRenderer
+from internal.renderers.gsplat_contrastive_feature_renderer_pano import GSplatContrastiveFeatureRenderer
 from common import AsyncImageSaver, AsyncTensorSaver
 
 parser = argparse.ArgumentParser()

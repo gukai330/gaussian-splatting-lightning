@@ -84,9 +84,19 @@ class EstimatedDepthColmapDataParser(ColmapDataParser):
                 return None
 
             depth_file_path, depth_scale, image_shape = depth_info
-            depth = np.load(depth_file_path) * depth_scale["scale"] + depth_scale["offset"]
+
+            raw_depth = np.load(depth_file_path)
+
+            # reg only the far range here
+            reg_range = (0, 0.8)
+
+            depth_mask = (raw_depth > reg_range[0]) & (raw_depth < reg_range[1])
+
+            depth = raw_depth * depth_scale["scale"] + depth_scale["offset"]
             depth = torch.tensor(depth, dtype=torch.float)
             depth = torch.clamp_min(depth, min=0.)
+            depth_mask = torch.tensor(depth_mask, dtype=torch.float)
+
 
             if depth.shape != image_shape:
                 assert allow_depth_interpolation, "the shape '{}' of depth map '{}' and '{}' of image not match, add the '--data.parser.allow_depth_interpolation=true' if you are sure this is expected".format(depth.shape, depth_file_path, image_shape)
@@ -97,6 +107,24 @@ class EstimatedDepthColmapDataParser(ColmapDataParser):
                     align_corners=True,
                 )[0, 0]
 
-            return depth
+                # also interpoate the mask
+                depth_mask = torch.nn.functional.interpolate(
+                    depth_mask[None, None, ...],
+                    image_shape,
+                    mode="nearest",
+                    align_corners=True,
+                )[0, 0]
+
+
+            return depth, depth_mask
 
         return load_depth
+    
+    def process_depth(self, raw_depth):
+
+        reg_range = (0, 0.8)
+
+        # get the mask within the depth range
+        depth_mask = (raw_depth > reg_range[0]) & (raw_depth < reg_range[1])
+
+        return depth_mask

@@ -15,7 +15,7 @@ import pytorch3d.ops
 from lightning.pytorch.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
 
 from internal.configs.segany_splatting import Optimization as OptimizationConfig
-from internal.renderers.gsplat_contrastive_feature_renderer import GSplatContrastiveFeatureRenderer
+from internal.renderers.gsplat_contrastive_feature_renderer_pano import GSplatContrastiveFeatureRenderer
 # from internal.renderers.contrastive_feature_renderer import ContrastiveFeatureRenderer
 from internal.utils.gaussian_model_loader import GaussianModelLoader
 

@@ -238,7 +238,7 @@ class Viewer:
         if seganygs is not None:
             print("loading SegAnyGaussian...")
             renderer = self._load_seganygs(seganygs)
-            turn_off_edit_and_video_render_panel()
+            # turn_off_edit_and_video_render_panel()
 
         # create renderer
         self.viewer_renderer = ViewerRenderer(
@@ -271,7 +271,7 @@ class Viewer:
         del ckpt
         torch.cuda.empty_cache()
 
-        from internal.renderers.seganygs_renderer import SegAnyGSRenderer
+        from internal.renderers.seganygs_renderer_custom_pano import SegAnyGSRenderer
         return SegAnyGSRenderer(semantic_features=semantic_features, scale_gate=scale_gate)
 
     def _load_vanilla_seganygs(self, path):
@@ -666,6 +666,7 @@ class Viewer:
                 )
 
         if enable_renderer_options is True:
+            print("setup renderer options")
             self.viewer_renderer.renderer.setup_web_viewer_tabs(self, server, tabs)
 
         # register hooks

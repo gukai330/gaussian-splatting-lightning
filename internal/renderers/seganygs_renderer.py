@@ -44,6 +44,8 @@ class SegAnyGSRenderer(Renderer):
             self.scale_conditioned_pca_projection_matrix,
         )
 
+        self.gaussians = None
+
         self.segment_mask = None
         self.similarities = None
 
@@ -104,7 +106,7 @@ class SegAnyGSRenderer(Renderer):
             viewpoint_camera=viewpoint_camera,
             scaling_modifier=scaling_modifier,
         )
-
+        self.gaussians = pc
         opacities = pc.get_opacity
         if self.anti_aliased is True:
             comp = project_results[4]
@@ -631,6 +633,11 @@ class ViewerOptions:
                         "similarity_score": self.similarity_score,
                         "similarity_score_gamma": self.similarity_score_gamma,
                     }, save_to)
+
+                    # save ply
+                    
+
+                    
                 save_button.disabled = False
                 self._show_message(event.client, f"Saved to '{save_to}'")
 

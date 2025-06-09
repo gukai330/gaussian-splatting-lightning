@@ -3,3 +3,4 @@ data:
   parser: SegAnyColmap
   val_max_num_images_to_cache: -1
   test_max_num_images_to_cache: -1
+  train_max_num_images_to_cache: -1
