@@ -6,3 +6,10 @@ edited
 clusters
 segments
 **/__pycache__
+meshes
+submodules
+*.pth
+/*.obj
+/*.png
+/*.ipynb
+/*.sh
