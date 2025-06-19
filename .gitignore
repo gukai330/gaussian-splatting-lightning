@@ -9,7 +9,6 @@ segments
 meshes
 submodules
 *.pth
-/*.obj
 /*.png
 /*.ipynb
 /*.sh
