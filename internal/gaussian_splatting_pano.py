@@ -30,10 +30,6 @@ from jsonargparse import lazy_instance
 from internal.utils.sh_utils import eval_sh
 from internal.utils.graphics_utils import store_ply
 
-from dataclasses import dataclass
-from internal.cameras import Camera, Cameras, CameraType, CameraOptimizer, CameraOptimizerConfig
-
-
 
 class GaussianSplatting(LightningModule):
     def __init__(
@@ -54,8 +50,6 @@ class GaussianSplatting(LightningModule):
             web_viewer: bool = False,
             initialize_from: str = None,
             renderer_output_types: Optional[List[str]] = None,
-            # camera_optimizer =  lazy_instance(CameraOptimizerConfig),
-            # cameras: Cameras = None,
     ) -> None:
         super().__init__()
         self.automatic_optimization = False
@@ -104,19 +98,6 @@ class GaussianSplatting(LightningModule):
         self.on_after_backward_hooks: List[Callable[[Dict, Any, GaussianModel, int, Self], None]] = []
         self.on_train_batch_end_hooks: List[Callable[[Dict, Any, GaussianModel, int, Self], None]] = []
         self.extra_train_metrics: List[Callable[[Dict, Any, GaussianModel, int, Self], torch.Tensor]] = []
-
-        # camera optimization
-        
-        # 初始化相机优化器
-
-    def initialize_camera_optimizer(self):
-        camera_optimizer = CameraOptimizer(
-            config=CameraOptimizerConfig(
-            ),
-            cameras=self.trainer.datamodule.dataparser_outputs.train_set.cameras,
-        )
-
-
 
     def log_metrics(
             self,
@@ -258,27 +239,20 @@ class GaussianSplatting(LightningModule):
 
         return camera, (image_name, gt_image, masked_pixels), extra_data
 
-    def forward(self, viewpoint_camera: Camera, **kwargs):
-        # 如果启用了相机优化，使用优化后的相机参数
-        if self.camera_optimizer is not None:
-            # 只获取当前视角的优化后相机参数
-            camera_idx = torch.tensor([viewpoint_camera[0].idx])
-            optimized_cameras = self.camera_optimizer.get_optimized_cameras(camera_idx)
-            viewpoint_camera = optimized_cameras[0]  # 因为只传入了一个相机索引，所以取第一个
-            
+    def forward(self, camera):
         if self.training is True:
             return self.renderer.training_forward(
                 self.trainer.global_step,
                 self,
-                viewpoint_camera,
+                camera,
                 self.gaussian_model,
-                bg_color=self.get_background_color().to(viewpoint_camera.R.device),
+                bg_color=self.get_background_color().to(camera.R.device),
                 render_types=self.renderer_output_types,
             )
         return self.renderer(
-            viewpoint_camera,
+            camera,
             self.gaussian_model,
-            bg_color=self._fixed_background_color().to(viewpoint_camera.R.device),
+            bg_color=self._fixed_background_color().to(camera.R.device),
             render_types=self.renderer_output_types,
         )
 
@@ -322,8 +296,6 @@ class GaussianSplatting(LightningModule):
 
     def on_train_start(self) -> None:
         super().on_train_start()
-
-        self.initialize_camera_optimizer()
 
         if self.hparams["web_viewer"] is True and self.trainer.global_rank == 0:
             if self.trainer.datamodule.hparams["parser"].__class__.__name__.lower() in ["blender", "nsvf", "matrixcity"]:
@@ -378,7 +350,7 @@ class GaussianSplatting(LightningModule):
         self.renderer.before_training_step(global_step, self)
 
         # forward
-        outputs = self(batch)
+        outputs = self(camera)
 
         
         # metrics
@@ -441,12 +413,6 @@ class GaussianSplatting(LightningModule):
         for scheduler in schedulers:
             scheduler.step()
 
-        # 如果启用了相机优化，执行相机参数优化
-        if self.camera_optimizer is not None:
-            # 计算相机优化相关的损失
-            camera_loss = self._compute_camera_loss(batch)
-            # 执行相机参数优化
-            self.camera_optimizer.step(camera_loss)
 
     def regularize_step(self, batch, batch_idx, step):
         # regularize with perspective view
@@ -455,7 +421,7 @@ class GaussianSplatting(LightningModule):
 
         camera_persp, image_info_persp, _ = batch_persp
 
-        outputs = self(batch_persp)
+        outputs = self(camera_persp)
 
         if (step-1)%981 == 2:
             # save visualization
@@ -483,11 +449,6 @@ class GaussianSplatting(LightningModule):
 
         return metrics
 
-    def _compute_camera_loss(self, batch):
-        """计算相机优化相关的损失"""
-        # 这里可以实现相机优化相关的损失计算
-        # 例如：重投影误差、平滑度损失等
-        return torch.tensor(0.0, device=self.device, requires_grad=True)
 
     def light_gaussian_prune(self, global_step):
         # TODO: move elsewhere
@@ -568,7 +529,7 @@ class GaussianSplatting(LightningModule):
         gt_image = image_info[1]
 
         # forward
-        outputs = self(batch)
+        outputs = self(camera)
         metrics, prog_bar = self.metric.get_validate_metrics(self, self.gaussian_model, batch, outputs)
         self.log_metrics(metrics, prog_bar, prefix=name, on_step=False, on_epoch=True)
         self.val_metrics.append((image_info[0], metrics))
@@ -593,6 +554,28 @@ class GaussianSplatting(LightningModule):
                 "epoch": max(self.trainer.current_epoch, self.restored_epoch),
                 "step": max(self.trainer.global_step, self.restored_global_step),
             })
+
+            # if self.log_image is not None:
+            #     grid = torchvision.utils.make_grid(torch.concat([outputs["render"], gt_image], dim=-1))
+            #     self.log_image(
+            #         tag="{}_images/{}".format(name, image_info[0].replace("/", "_")),
+            #         image_tensor=grid,
+            #     )
+            #
+            # image_output_path = os.path.join(
+            #     self.hparams["output_path"],
+            #     name,
+            #     "epoch={}-step={}".format(
+            #         max(self.trainer.current_epoch, self.restored_epoch),
+            #         max(self.trainer.global_step, self.restored_global_step),
+            #     ),
+            #     "{}.png".format(image_info[0].replace("/", "_"))
+            # )
+            # os.makedirs(os.path.dirname(image_output_path), exist_ok=True)
+            # torchvision.utils.save_image(
+            #     torch.concat([outputs["render"], gt_image], dim=-1),
+            #     image_output_path,
+            # )
 
     def on_validation_epoch_start(self) -> None:
         super().on_validation_epoch_start()
@@ -729,9 +712,6 @@ class GaussianSplatting(LightningModule):
         # metric optimizer and scheduler setup
         metric_optimizer, metric_scheduler = self.metric.training_setup(self)
         add_optimizers_and_schedulers(metric_optimizer, metric_scheduler)
-
-        # camera optimizer and scheduler setup
-
 
         return optimizers, schedulers
 
