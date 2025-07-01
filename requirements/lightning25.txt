@@ -1,3 +1,4 @@
+-i https://pypi.tuna.tsinghua.edu.cn/simple
 lightning[pytorch-extra]==2.5.*
 pytorch-lightning==2.5.*
 -r common.txt

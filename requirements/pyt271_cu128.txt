@@ -1,0 +1,4 @@
+--index-url https://mirrors.nju.edu.cn/pytorch/whl/cu128
+torch==2.7.1
+torchvision
+torchaudio
