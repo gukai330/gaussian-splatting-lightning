@@ -1,0 +1,21 @@
+[submodule "submodules/gsplat"]
+	path = submodules/gsplat
+	url = git@github.com:gukai330/gsplat.git
+[submodule "submodules/PanDA"]
+	path = submodules/PanDA
+	url = git@github.com:gukai330/PanDA.git
+[submodule "submodules/segment-anything"]
+	path = submodules/segment-anything
+	url = https://github.com/facebookresearch/segment-anything.git
+[submodule "submodules/Depth-Anthing-V2"]
+	path = submodules/Depth-Anthing-V2
+	url = https://github.com/DepthAnything/Depth-Anything-V2
+[submodule "submodules/fused-ssim"]
+	path = submodules/fused-ssim
+	url = https://github.com/rahul-goel/fused-ssim.git
+[submodule "submodules/simple-knn"]
+	path = submodules/simple-knn
+	url = https://github.com/yzslab/simple-knn.git
+[submodule "submodules/SphereSfM"]
+	path = submodules/SphereSfM
+	url = https://github.com/json87/SphereSfM.git
