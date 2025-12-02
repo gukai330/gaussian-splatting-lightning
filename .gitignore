@@ -8,7 +8,6 @@ clusters
 segments
 **/__pycache__
 meshes
-submodules
 *.pth
 /*.png
 /*.ipynb
